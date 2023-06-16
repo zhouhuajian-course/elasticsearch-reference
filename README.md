@@ -1,6 +1,8 @@
 # Elasticsearch 参考
 
-搜索引擎 Search Engine，简称 ES，类似搜索引擎 Apache Solr，根据 Google Trends 目前热度貌似不如 ES
+搜索引擎 Search Engine，简称 ES，类似搜索引擎 Apache Solr，根据 Google Trends 目前热度貌似不如 ES  
+都是基于 Apache Lucene™ 的开源搜索引擎  
+无论在开源还是专有领域，Lucene 可以被认为是迄今为止最先进、性能最好的、功能最全的搜索引擎库。 
 
 文档 https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html  
 源码 https://github.com/elastic/elasticsearch
@@ -10,7 +12,46 @@ Elastic 公司，先 Elasticsearch 成功，再创立 Elastic 公司。
 
 https://www.elastic.co/cn/what-is/open-x-pack  
 X-Pack 简介 - X-Pack 为 Elastic Stack 带来了一系列深度集成的企业级功能，其中包括安全、告警、监测、报告、图表分析、专用 APM UI 和 Machine Learning。  
-一些特殊功能包/功能代码的总称X-Pack
+一些特殊功能包/功能代码的总称X-Pack  
+
+Elastichsearch Service  
+用户既可通过 Elasticsearch Service（在 Amazon Web Services (AWS)、Google Cloud 和阿里云上均有提供）以托管型服务的形式部署 Elasticsearch，也可自行下载并在自己的硬件上或在云端进行安装。
+
+## Document 文档相关 API
+
+https://www.elastic.co/guide/en/elasticsearch/reference/8.8/docs.html
+
+Document APIs
+
+## Kibana 安装、启动
+
+https://www.elastic.co/guide/en/kibana/current/index.html  
+https://www.elastic.co/guide/en/kibana/current/targz.html
+
+ES 虽然强大，但操作不方便，可以需要借助 Kibana  
+https://github.com/elastic/kibana  
+开发语言 TypeScript 不是 Java
+
+```
+1. 下载 Kibana tar.gz 包
+    https://www.elastic.co/cn/downloads/kibana
+2. 修改配置，让所有主机都能访问
+     $KIBANA_HOME/config/kibana.yml
+     #server.host: "localhost"
+    server.host: "0.0.0.0"    
+3. 解压运行    
+    不能root运行，
+    $ chown -R es:es kibana-8.8.0
+    $ su es
+    $ bin/kibana 前台运行 (推荐运行方式 Ctrl-C 停止)
+    $ [nohup] bin/kibana & 后台运行 (kill时使用netstat -anp | grep 5601找pid，而不是ps -ef | grep kibana)
+4. 测试
+    http://192.168.1.205:5601/
+    Configuration recommended
+    In a production environment, it is recommended that you configure server.publicBaseUrl. Learn more.
+    选择 Explore on my own
+    默认不需要配置 192.168.1.205:9200 的地址，直接绑定了该 ES
+```
 
 ## Linux 安装、启动、停止 ES 
 
@@ -79,7 +120,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#targz
 > 安装 shasum 命令，`yum install -y perl-Digest-SHA`
 > The Elasticsearch .tar.gz package does not include the systemd module. To manage Elasticsearch as a service, use the Debian or RPM package instead.
 > http_ca.crt证书可以用来安全连接ES，$ES_HOME/config/certs/http_ca.crt，拷贝到客户端机器
-> 
+
 ## 开发语言 
 
 Java
