@@ -8,6 +8,10 @@
 Elastic 公司，先 Elasticsearch 成功，再创立 Elastic 公司。  
 附加产品 Logstash Kibana Beats，一同组成 Elastic Stack。
 
+https://www.elastic.co/cn/what-is/open-x-pack  
+X-Pack 简介 - X-Pack 为 Elastic Stack 带来了一系列深度集成的企业级功能，其中包括安全、告警、监测、报告、图表分析、专用 APM UI 和 Machine Learning。  
+一些特殊功能包/功能代码的总称X-Pack
+
 ## Linux 安装、启动、停止 ES 
 
 https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#targz
@@ -46,9 +50,10 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#targz
 4. 日志 默认 输出日志到 控制台 和 logs/<clustername>.log    
     启动时记录一些信息，初始化完后，不会记录更多信息，除非一些值得记录的事情发生了。
 5. 加入其他节点 (暂时忽略)
-6. 测试 默认端口 9200，默认需要https， 
-    (未测试)curl --cacert $ES_HOME/config/certs/http_ca.crt -u elastic https://localhost:9200 
+6. 测试 默认端口 9200，默认需要https， http无法正常访问
+    ① (未测试)curl --cacert $ES_HOME/config/certs/http_ca.crt -u elastic https://localhost:9200 
     证书都在config/certs里面
+    ② 浏览器 访问 https://192.168.1.205:9200/ 输出账号密码
 5. 停止 ES，Ctrl-C
 ```
 
@@ -56,14 +61,25 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#targz
 
 ```text
 1. 为了方便开发，让所有主机都能访问
+    默认加载config/elasticsearch.yml配置，任何配置在配置文件中能配置的，也能在命令行中配置
+    使用-E语法
+     -Ehttp.host=0.0.0.0 (默认所有主机都能访问)
+     # Allow HTTP API connections from anywhere
+     # Connections are encrypted and require user authentication
 2. 为了方便开发，关闭安全功能
-3. 后台运行 ./bin/elasticsearch -d -p pid
+    -Expack.security.enabled=false
+3. 后台运行 
+    ./bin/elasticsearch -d -p pid -Expack.security.enabled=false
 4. 浏览器访问测试 ES 是否在运行
-5. 停止后台运行的 ES 
+    http://192.168.1.205:9200/
+5. 停止后台运行的 ES
+    pkill -F pid
 ```
 
 > 安装 shasum 命令，`yum install -y perl-Digest-SHA`
-
+> The Elasticsearch .tar.gz package does not include the systemd module. To manage Elasticsearch as a service, use the Debian or RPM package instead.
+> http_ca.crt证书可以用来安全连接ES，$ES_HOME/config/certs/http_ca.crt，拷贝到客户端机器
+> 
 ## 开发语言 
 
 Java
