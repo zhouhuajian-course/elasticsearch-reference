@@ -32,6 +32,8 @@ ES 虽然强大，但操作不方便，可以需要借助 Kibana
 https://github.com/elastic/kibana  
 开发语言 TypeScript 不是 Java
 
+kibana 如何发音 how to pronounce kibana?
+
 ```
 1. 下载 Kibana tar.gz 包
     https://www.elastic.co/cn/downloads/kibana
