@@ -68,6 +68,72 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html
 字符串，根据不同的目的，可以设计为text或keyword字段类型，或者同时设计两个字段类型。
 Avoid using keyword fields for full-text search. Use the text field type instead.
 
+## 安装 并 测试 ik 分词器 (存储和搜索的分词器可以分开指定)
+
+https://github.com/medcl/elasticsearch-analysis-ik
+
+ik_max_word 和 ik_smart 什么区别?  
+    ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合，适合 Term Query；  
+    ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”，适合 Phrase 查询。  
+
+```text
+Install
+1.download or compile
+    optional 1 - download pre-build package from here: https://github.com/medcl/elasticsearch-analysis-ik/releases
+        create plugin folder cd your-es-root/plugins/ && mkdir ik    
+        unzip plugin to folder your-es-root/plugins/ik
+
+    optional 2 - use elasticsearch-plugin to install ( supported from version v5.5.1 ):
+        ./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.3.0/elasticsearch-analysis-ik-6.3.0.zip
+        NOTE: replace 6.3.0 to your own elasticsearch version
+2.restart elasticsearch
+```
+
+安装，重启ES
+
+```text
+https://github.com/medcl/elasticsearch-analysis-ik/releases
+找到对应版本ES，版本不一致会报错
+$ ./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v8.7.0/elasticsearch-analysis-ik-8.7.0.zip
+$ pkill -F pid
+$ ./bin/elasticsearch -d -p pid -Expack.security.enabled=false
+```
+
+测试ik分词器
+
+```text
+DELETE /news
+PUT /news
+{
+  "mappings": {
+    "properties": {
+      "content": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      }
+    }
+  }
+}
+POST /news/_doc/
+{"content":"这是一条新闻内容"}
+POST /_analyze
+{
+  "text": "中国上海市", 
+  "analyzer": "standard"
+} -> 中 国 上 海 市
+POST /_analyze
+{
+  "text": "中国上海市", 
+  "analyzer": "ik_smart"
+} -> 中国 上海市
+POST /_analyze
+{
+  "text": "中国上海市", 
+  "analyzer": "ik_max_word"
+} -> 中国 上海市 上海 海市
+```
+
 ## term精准搜索、match 分词匹配搜索、wildcard 通配符搜索、fuzzy 模糊纠错搜索
 
 mysql like % 0个或多个任意字符 _ 1个任意字符
@@ -141,8 +207,6 @@ mysql like % 0个或多个任意字符 _ 1个任意字符
     {"query":{"fuzzy":{"name.keyword":{"value":"张三丰"}}}}
     # 结果 张三丰 张二丰 马三丰 张三
     ```
-   
-
 
 ## Search APIs 搜索 API
 
