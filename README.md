@@ -33,7 +33,7 @@ Elastichsearch Service
     0  谷歌地图之父跳槽Facebook
     1  谷歌地图之父加盟Facebook
     2  谷歌地图之父拉斯加加盟社交网站Facebook
-如果不是倒排索引，可能的情况
+如果不是倒排索引，可能的情况  (正排索引 forward index)
     0 谷歌地图 之父 跳槽 Facebook
     1 谷歌地图 之父 加盟 Facebook
     2 谷歌地图 之父 拉斯加 加盟 社交网站 Facebook
@@ -46,6 +46,22 @@ Elastichsearch Service
     4     加盟        1 2
     5     拉斯加      2
     6     社交网站    2
+```
+
+```text
+Forward Index:
+    Document  Keywords
+    doc1      hello, sky, morning
+    doc2      tea, coffee, hi
+    doc3      greetings, sky
+
+Inverted Index
+    Word       Documents
+    hello      doc1
+    sky        doc1, doc3
+    coffee     doc2
+    hi         doc2
+    greetings  doc3
 ```
 
 ## index的增删改查
