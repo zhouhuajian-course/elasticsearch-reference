@@ -17,6 +17,37 @@ X-Pack 简介 - X-Pack 为 Elastic Stack 带来了一系列深度集成的企业
 Elastichsearch Service  
 用户既可通过 Elasticsearch Service（在 Amazon Web Services (AWS)、Google Cloud 和阿里云上均有提供）以托管型服务的形式部署 Elasticsearch，也可自行下载并在自己的硬件上或在云端进行安装。
 
+## 倒排索引 inverted index
+
+主流搜索引擎都会使用倒排索引，ES也不例外，当然ES还会根据不同字段数据类型使用不同索引算法
+
+如果对大量的文档进行搜索某个关键字，正常的逻辑是，遍历每个文档，找到有这个关键字的所有文档，这需要全量搜索，非常慢。  
+倒排索引，先记录每个关键词出现在那些文档里，那么直接根据关键字就能拿到所有匹配的文档，这样效率快多了。  
+这种方式，应该也是典型的，牺牲写的性能，来提高读的性能。
+
+```text
+假设 三篇文档
+    id content
+    0  谷歌地图之父跳槽Facebook
+    1  谷歌地图之父加盟Facebook
+    2  谷歌地图之父拉斯加加盟社交网站Facebook
+如果不是倒排索引，可能的情况
+    0 谷歌地图 之父 跳槽 Facebook
+    1 谷歌地图 之父 加盟 Facebook
+    2 谷歌地图 之父 拉斯加 加盟 社交网站 Facebook
+如果是倒排索引，可能的情况
+    单词ID 单词       倒排列表(文档ID)
+    0     谷歌地图     0 1 2
+    1     之父        0 1 2 
+    2     跳槽        0
+    3     Facebook   0 1 2
+    4     加盟        1 2
+    5     拉斯加      2
+    6     社交网站    2
+```
+
+
+
 ## index的增删改查
 
 https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html
