@@ -17,11 +17,119 @@ X-Pack 简介 - X-Pack 为 Elastic Stack 带来了一系列深度集成的企业
 Elastichsearch Service  
 用户既可通过 Elasticsearch Service（在 Amazon Web Services (AWS)、Google Cloud 和阿里云上均有提供）以托管型服务的形式部署 Elasticsearch，也可自行下载并在自己的硬件上或在云端进行安装。
 
+## cluster and nodes
+
+集群，一个集群里面可以有多个节点
+
+## documents and indices 文档和索引
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/documents-indices.html
+
+1. ES是一个分布式的文档存储。不是存储存储有多个列的行数据，而是通过序列化为JSON documents来村粗复杂的数据结构。
+2. 文档分布在集群的任意一个节点，可以从任意一个节点中获取；
+3. 当文档被存储后，它能被索引和搜索几乎接近实时，1秒内
+4. ES使用inverted index的数据结构，倒排索引，它能支持非常快的full-text searches
+5. 一个inverted index lists每个出现在文档中的unique word
+6. 一个index可以被认为是优化过的文档集合，每个文档是多个字段fields的集合，字段是键值对key-value pairs，包含了数据
+7. 文本字段存储在倒排索引，数字和地理字段存储在BKD树
+8. 默认开启动态映射，When dynamic mapping is enabled, Elasticsearch automatically detects and adds new fields to the index. This default behavior makes it easy to index and explore your data—​just start indexing documents and Elasticsearch will detect and map booleans, floating point and integer values, dates, and strings to the appropriate Elasticsearch data types.
+9. ...
+
+## 字段数据类型 Field Data Types
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html#object-types
+
+1. 每个字段都有一个字段数据类型，或者叫字段类型
+2. text字段被解析来做全文搜索，keyword字段被用来做过滤和排序
+3. 字段类型通过family进行分组，在相同family的类型有完全一样的搜索欣慰，但是有不同的空间使用或性能
+4. 当前有两个类型families, keyword 和 text。 其他类型families只有单一的字段类型。例如boolean type family包含一个字段类型 boolean
+5. 常用类型Common Types。binary,boolean,Keywords,Numbers,Dates,alias
+6. 对象和关系类型Objects and relational types。object,flattened,nested,join
+7. 结构化数据类型Structured data types。Range, ip, version, murmur3
+8. 聚合数据类型 Aggregate data types。aggregate_metric_double, histogram
+9. 文本搜索类型 Text search types。text,annotated-text,completion(自动补全),search_as_you_type,token_count
+10. 文档排序类型 Document ranking types。dense_vector,rank_feature,rank_features
+11. 空间数据类型 Spatial data types。 geo_point(经纬度), geo_shape, point, shape
+12. 其他类型Other types。percolator
+13. 数组 Arrays，在Elasticsearch，数组不需要一个专门的字段数据类型。任何字段默认能包含零个或多个值，但是，在数组里面的所有值必须是同样的字段类型
+14. 多字段 Multi-fields。It is often useful to index the same field in different ways for different purposes。例如可以将一个string字段映射为text字段(be mapped as a text field)为了全文搜索，并且映射为keyword为了排序和聚合。另外，可以用standard analyzer, english annalyzer和frech analyzer，来index一个text字段。大多数字段类型通过fields参数来支持多字段。
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/keyword.html
+
+字符串，根据不同的目的，可以设计为text或keyword字段类型，或者同时设计两个字段类型。
+Avoid using keyword fields for full-text search. Use the text field type instead.
+
+## term精准搜索、match 分词匹配搜索、wildcard 通配符搜索、fuzzy 模糊纠错搜索
+
+```text
+mysql like % 0个或多个任意字符 _ 1个任意字符
+term是精确查询
+GET users/_search 
+{
+    "query": {
+        "match": {
+            "name": "张三"
+        }
+    }
+}
+```
+
+
+
+
+## Search APIs 搜索 API
+
+https://www.elastic.co/guide/en/elasticsearch/reference/8.8/search.html#search
+
+```text
+GET /<target>/_search
+GET /_search
+POST /<target>/_search
+POST /_search
+```
+
 ## Document 文档相关 API
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.8/docs.html
 
 Document APIs
+
+**Index API**
+
+如果索引里的文档存在，请求会更新文档，并增加它的version，+1
+
+```text
+PUT /<target>/_doc/<_id>
+POST /<target>/_doc/
+PUT /<target>/_create/<_id>
+POST /<target>/_create/<_id>
+    <target>
+        (Required, string) Name of the data stream or index to target.
+    <_id>
+        (Optional, string) Unique identifier for the document.
+        To automatically generate a document ID, use the POST /<target>/_doc/ request format and omit this parameter.
+    Description: You can index a new JSON document with the _doc or _create resource. Using _create guarantees that the document is only indexed if it does not already exist. To update an existing document, you must use the _doc resource.
+
+POST users_00/_doc/10
+{
+    "user_id": 10,
+    "user_name": "张三",
+    "age": 20
+}
+POST users_01/_doc/11
+{
+    "user_id": 11,
+    "user_name": "张三丰",
+    "age": 20
+}
+POST users_02/_doc/12
+{
+    "user_id": 12,
+    "user_name": "张二",
+    "age": 20
+}
+GET users_*/_search
+```
 
 ## Kibana 安装、启动
 
@@ -61,7 +169,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#targz
 
 压缩包 安装
 
-```
+```text
 1. 下载 ES 并解压 ($ES_HOME/jdk，有绑定版本的JDK，不需要额外搭建JDK环境)
     https://www.elastic.co/downloads/elasticsearch 
     或者
