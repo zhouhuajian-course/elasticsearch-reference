@@ -17,6 +17,15 @@ X-Pack 简介 - X-Pack 为 Elastic Stack 带来了一系列深度集成的企业
 Elastichsearch Service  
 用户既可通过 Elasticsearch Service（在 Amazon Web Services (AWS)、Google Cloud 和阿里云上均有提供）以托管型服务的形式部署 Elasticsearch，也可自行下载并在自己的硬件上或在云端进行安装。
 
+## index的增删改查
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html
+
+## 动态mapping和明确mapping 
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html  
+https://www.elastic.co/guide/en/elasticsearch/reference/current/explicit-mapping.html
+
 ## cluster and nodes
 
 集群，一个集群里面可以有多个节点
@@ -61,20 +70,78 @@ Avoid using keyword fields for full-text search. Use the text field type instead
 
 ## term精准搜索、match 分词匹配搜索、wildcard 通配符搜索、fuzzy 模糊纠错搜索
 
-```text
 mysql like % 0个或多个任意字符 _ 1个任意字符
-term是精确查询
-GET users/_search 
-{
-    "query": {
-        "match": {
-            "name": "张三"
+
+1. 删除users索引，如果已存在 
+    GET /users GET /users/_mapping DELETE /users
+2. 创建users索引
+    ```text
+    PUT /users
+    {
+      "mappings": {
+        "properties": {
+          "uid":    { "type": "long" },
+          "name":   { 
+            "type": "text", 
+            "fields": { "keyword": {"type": "keyword"} }
+          },    
+          "age":    { "type": "integer" },  
+          "email":  { "type": "keyword"  }
         }
+      }
     }
-}
-```
-
-
+    ```
+3. 批量创建文档
+    ```text
+    POST /users/_bulk
+    {"index":{"_id":"1"}}
+    {"uid":1,"name":"张三","age":18,"email":"name@company.com"}
+    {"index":{"_id":"2"}}
+    {"uid":2,"name":"张三丰","age":18,"email":"name@company.com"}
+    {"index":{"_id":"3"}}
+    {"uid":3,"name":"张飞","age":18,"email":"name@company.com"}
+    {"index":{"_id":"4"}}
+    {"uid":4,"name":"三德子","age":18,"email":"name@company.com"}
+    {"index":{"_id":"5"}}
+    {"uid":5,"name":"张二丰","age":18,"email":"name@company.com"}
+    {"index":{"_id":"6"}}
+    {"uid":6,"name":"孙权","age":18,"email":"name@company.com"}
+    {"index":{"_id":"7"}}
+    {"uid":7,"name":"马三丰","age":18,"email":"name@company.com"}
+    ```
+4. 分词测试 (建议装一下ik等中文分词器，ik_smart, ik_max_word, 标准和内置的分词器适合英文语言，不适合中文，中文会被分为一个个汉字)
+    ```text
+    POST _analyze
+    {
+        "text": "张三"
+    }
+    结果 张 三 (没有张三整体，建议使用ik_smart或ik_max_word)
+    ```
+5. 精确搜索、分词搜索、通配符搜索、模糊搜索(类型为text，存储时会被变成分词存储，而不是整体)
+    ```text
+    # 精确搜索
+    GET users/_search
+    {"query":{"term":{"name.keyword":{"value":"张三"}}}}
+    # 结果 张三
+    
+    # 分词搜索
+    GET users/_search
+    {"query": {"match": {"name": "张三"}}}
+    # 结果 张三 张三丰 张飞 三德子 张二丰 马三丰
+    
+    # 通配符搜索
+    GET users/_search
+    {"query":{"wildcard":{"name.keyword":{"value":"张三*"}}}}
+    # 结果 张三 张三丰
+    
+    # 模糊搜索 高CPU开销和低精确度 (允许一定字符的修改、添加、删除、修改位置)
+    # 例如 1. box → fox  2. black → lack  3. sic → sick  4. act → cat
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html
+    GET users/_search
+    {"query":{"fuzzy":{"name.keyword":{"value":"张三丰"}}}}
+    # 结果 张三丰 张二丰 马三丰 张三
+    ```
+   
 
 
 ## Search APIs 搜索 API
